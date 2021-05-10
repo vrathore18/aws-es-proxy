@@ -2,19 +2,17 @@ resolver 10.0.0.2 ipv6=off;
 
 server {
     listen 443;
-    server_name vfdjob-devapps.vfdbank.systems;
-    rewrite ^/$ https://vfdjob-devapps.vfdbank.systems/_plugin/kibana redirect;
+    server_name ${HOST_DOMAIN};
+    rewrite ^/$ https://${HOST_DOMAIN}/_plugin/kibana redirect;
 
     ssl_prefer_server_ciphers on;
 
-    set $es_endpoint vpc-fineract-elk-6c72qgygwbnziphbrsn2zpze2i.eu-west-1.es.amazonaws.com;
-
     location ^~ /_plugin/kibana {
         # Forward requests to Kibana
-        proxy_pass https://$es_endpoint;
+        proxy_pass https://${ES_HOST};
 
         # Update cookie domain and path
-        proxy_cookie_domain $es_endpoint vfdjob-devapps.vfdbank.systems;
+        proxy_cookie_domain ${ES_HOST} ${HOST_DOMAIN};
 
         # Response buffer settings
         proxy_buffer_size 128k;
@@ -25,7 +23,7 @@ server {
     location ~ \/(log|sign|error|fav|forgot|change|confirm) {
 
         # Handle redirects to Kibana
-        proxy_redirect https://$es_endpoint https://vfdjob-devapps.vfdbank.systems;
+        proxy_redirect https://${ES_HOST} https://${HOST_DOMAIN};
 
     }
 }
